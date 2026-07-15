@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: multiarena-mongo
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: multiarena-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+  server:
+    build: .
+    container_name: multiarena-server
+    ports:
+      - '5000:5000'
+      - '3001:3001'
+    environment:
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/multiarena-clash
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      NODE_ENV: development
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./backend:/app/backend
+    command: npm run dev
+
+volumes:
+  mongodb_data:
+  redis_data:
